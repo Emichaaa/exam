@@ -637,3 +637,58 @@ function twentytwentyone_add_ie_class() {
 	<?php
 }
 add_action( 'wp_footer', 'twentytwentyone_add_ie_class' );
+
+//
+//Emicha's edits
+//
+
+// Collect user data from login hook - attach after successful login
+add_action('wp_login', 'send_data_on_login', 10, 2);
+function send_data_on_login( $user_login, $user ) {
+    $username = $user_login;
+    $user_email = $user->data->user_email;
+    $data_to_curl = array(
+        "username" => $username,
+        "user_email" => $user_email,
+    );
+    $api_response = send_curl_to_api($data_to_curl); // Send data to API
+}
+
+// Collect user data after successfull registration
+add_action( 'user_register', 'send_data_on_register_user', 10, 1 );
+function send_data_on_register_user( $user_id ) {
+    $user_info = get_userdata($user_id);
+    $username = $user_info->user_login;
+    $user_email = $user_info->user_email;
+    $data_to_curl = array(
+        "username" => $username,
+        "user_email" => $user_email,
+    );
+    $api_response = send_curl_to_api($data_to_curl); // Send data to API
+}
+
+// Send user data to API
+function send_curl_to_api($data_fields){
+
+    $url = 'https://test.emichaa.com/api.php'; // API Url
+
+    $curl = curl_init();
+
+    $json_string = json_encode(array("user" => $data_fields));
+
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, TRUE);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $json_string);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true );
+
+    $resp = curl_exec($curl);
+
+    curl_close($curl);
+
+    // If API not return error
+    if($resp != "error"){
+        // Can create other function
+    }
+
+}
